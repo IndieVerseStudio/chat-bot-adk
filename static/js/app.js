@@ -1,13 +1,13 @@
 const sessionId = Math.random().toString().substring(10);
-const ws_url = "ws://" + window.location.host + "/ws/" + sessionId;
+const ws_url = "wss://" + window.location.host + "/ws/" + sessionId;
 let websocket = null;
 
 function connectWebsocket() {
   websocket = new WebSocket(ws_url);
 
-  websocket.onopen = function () {
-    console.log("WebSocket connection opened.");
-  };
+  // websocket.onopen = function () {
+  //   console.log("WebSocket connection opened.");
+  // };
 
   websocket.onmessage = function (event) {
     const message_from_server = JSON.parse(event.data);
@@ -53,7 +53,7 @@ function connectWebsocket() {
     console.log("WebSocket error: ", e);
   };
 }
-connectWebsocket();
+// connectWebsocket();
 
 function sendMessage(message) {
   if (websocket && websocket.readyState == WebSocket.OPEN) {
