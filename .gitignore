@@ -111,3 +111,4 @@ gcp.json
 .vscode/
 
 *.pem
+*.terraform
