@@ -1,7 +1,7 @@
 import os
 import warnings
 from pathlib import Path
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 from fastapi import WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
@@ -13,7 +13,7 @@ from session_manager import SessionManager
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
-load_dotenv()
+# load_dotenv()
 
 APP_NAME = "ADK Streaming example"
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     uvicorn.run(
         app,
         host="localhost",
-        port=int(os.environ.get("PORT", 8443)),  # Use 443 for production
+        port=int(os.environ.get("PORT", 8000)),  # Use 443 for production
         ssl_certfile="cert.pem",
         ssl_keyfile="key.pem"
     )
