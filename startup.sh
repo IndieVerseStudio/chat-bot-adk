@@ -33,10 +33,10 @@ echo "[4/6] Create venv and install Python deps"
 if [ ! -x "$APP_DIR/venv/bin/python" ]; then
   sudo -u "$APP_USER" python3 -m venv "$APP_DIR/venv"
 fi
-sudo -u "$APP_USER" "$APP_DIR/venv/bin/pip" install --upgrade pip
+# sudo -u "$APP_USER" "$APP_DIR/venv/bin/pip" install --upgrade pip
 # requirements first (if present), then ensure uvicorn is installed
 if [ -f "$APP_DIR/requirements.txt" ]; then
-  sudo -u "$APP_USER" "$APP_DIR/venv/bin/pip" install -r "$APP_DIR/requirements.txt"
+  sudo -u "$APP_USER" "$APP_DIR/venv/bin/pip3" install -r "$APP_DIR/requirements.txt"
 fi
 sudo -u "$APP_USER" "$APP_DIR/venv/bin/pip" install "uvicorn[standard]"
 

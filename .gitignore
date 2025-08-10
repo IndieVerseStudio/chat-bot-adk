@@ -112,3 +112,4 @@ gcp.json
 
 *.pem
 *.terraform
+*.tfvars
