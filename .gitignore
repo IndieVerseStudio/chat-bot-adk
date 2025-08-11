@@ -113,3 +113,5 @@ gcp.json
 *.pem
 *.terraform
 *.tfvars
+*.tfstate
+*.tfstate.backup
