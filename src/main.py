@@ -66,11 +66,15 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
         await session_manager.end_session(user_id_str)
         print(f"Session cleanup completed for client #{user_id}")
 
+BASE_DIR = Path(__file__).resolve().parent
+CERT_PATH = BASE_DIR.parent / "secrets" / "cert.pem"
+KEY_PATH = BASE_DIR.parent / "secrets" / "key.pem"
+
 if __name__ == "__main__":
     uvicorn.run(
         app,
         host="localhost",
         port=int(os.environ.get("PORT", 8000)),  # Use 443 for production
-        ssl_certfile="cert.pem",
-        ssl_keyfile="key.pem"
+        ssl_certfile=CERT_PATH,
+        ssl_keyfile=KEY_PATH
     )

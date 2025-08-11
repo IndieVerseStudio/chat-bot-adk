@@ -187,6 +187,6 @@ class UserSession:
                         raise exception
                         
         except Exception as e:
-            logging.info(f"Session error for user #{self.user_id}: {e}")
+            print(f"Session error for user #{self.user_id}: {e}")
             raise
 

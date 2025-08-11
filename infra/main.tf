@@ -75,7 +75,7 @@ resource "google_compute_instance" "adk_vm" {
 
   // This startup script automates the entire setup process
   metadata = {
-    startup-script = file("startup.sh")
+    startup-script = file("../scripts/startup.sh")
   }
 
   // Allows the instance to have full access to all Cloud APIs.
