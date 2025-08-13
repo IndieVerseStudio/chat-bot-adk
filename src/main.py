@@ -14,6 +14,10 @@ from session_manager import SessionManager
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
 # load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent
+CERT_PATH = BASE_DIR.parent / "secrets" / "cert.pem"
+KEY_PATH = BASE_DIR.parent / "secrets" / "key.pem"
+STATIC_DIR = BASE_DIR.parent / "static"
 
 APP_NAME = "ADK Streaming example"
 
@@ -35,7 +39,7 @@ app = get_fast_api_app(
     web=SERVE_WEB_INTERFACE,
 )
 
-STATIC_DIR = Path("static")
+# STATIC_DIR = Path("static")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Create a global session manager instance
