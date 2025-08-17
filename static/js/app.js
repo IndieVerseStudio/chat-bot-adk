@@ -114,8 +114,17 @@ const startAudioButton = document.getElementById("startAudioButton");
 
 startAudioButton.addEventListener("click", () => {
   startAudioButton.disabled = true;
+  startAudioButton.textContent = "Connecting...";
+
   startAudio();
   connectWebsocket(); // reconnect with the audio mode
+
+  // Update UI after connection
+  setTimeout(() => {
+    startAudioButton.textContent = "Voice Chat Active";
+    document.getElementById("statusText").textContent =
+      "Connected - Ready to help with KYC queries";
+  }, 1000);
 });
 
 // Audio recorder handler

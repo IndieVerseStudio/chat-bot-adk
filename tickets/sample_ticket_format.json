@@ -1,0 +1,21 @@
+{
+  "ticket_id": "C1000",
+  "ticket_type": "complaint",
+  "created_timestamp": "2025-01-17T17:53:45.123456",
+  "created_by": "PRIYA - KYC Customer Care Bot",
+  "ticket_data": {
+    "complaint_id": "C1000",
+    "opus_id": "100006",
+    "customer_name": "Priya Yadav",
+    "mobile_number": "9812345675",
+    "type": "Opus ID App",
+    "sub_type": "Painter/contractor Complaints",
+    "issue": "KYC Issue",
+    "subject": "Account Approval pending-Contractor",
+    "priority": "Standard",
+    "timeline_days": 7,
+    "status": "Open",
+    "created_date": "2025-01-17 17:53:45",
+    "json_file_path": "tickets/complaint_C1000_20250117_175345.json"
+  }
+}

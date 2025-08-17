@@ -139,6 +139,8 @@ class UserSession:
                         }
                         await websocket.send_text(json.dumps(response))
                     continue
+                
+
 
                 # Send the message to the agent
                 if mime_type == "audio/pcm":
@@ -171,22 +173,45 @@ class UserSession:
                 return_when=asyncio.FIRST_COMPLETED
             )
             
-            # Cancel remaining tasks
+            # Cancel remaining tasks gracefully
             for task in pending:
                 task.cancel()
                 try:
                     await task
                 except asyncio.CancelledError:
                     pass
+                except Exception as e:
+                    # Suppress common Windows connection errors during cleanup
+                    if not self._is_connection_error(e):
+                        print(f"Task cleanup error for user #{self.user_id}: {e}")
             
-            # Check if any task raised an exception (but ignore CancelledError)
+            # Check if any task raised an exception (but ignore CancelledError and connection errors)
             for task in done:
                 if not task.cancelled():  # Only check non-cancelled tasks
                     exception = task.exception()
-                    if exception:
+                    if exception and not self._is_connection_error(exception):
                         raise exception
                         
         except Exception as e:
-            print(f"Session error for user #{self.user_id}: {e}")
-            raise
+            if not self._is_connection_error(e):
+                print(f"Session error for user #{self.user_id}: {e}")
+                raise
+    
+    def _is_connection_error(self, error):
+        """Check if error is a common connection-related error to suppress"""
+        error_types = (
+            ConnectionResetError,
+            ConnectionAbortedError, 
+            OSError
+        )
+        if isinstance(error, error_types):
+            return True
+        
+        # Check for specific Windows error codes
+        if hasattr(error, 'winerror'):
+            # 10054: Connection reset by peer
+            # 10053: Connection aborted
+            return error.winerror in [10054, 10053]
+        
+        return False
 

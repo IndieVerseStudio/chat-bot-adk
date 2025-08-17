@@ -1,0 +1,86 @@
+flowchart TD
+    A["KYC Approval Pending - Contractor<br/>Issues: ID not verified, approval pending,<br/>30+ days passed, repeated complaints"] --> A1["Greet: 'Namaste, welcome to Birla Opus.<br/>My name is [Agent Name], how can I help you?'"]
+    
+    A1 --> A2{"Calling from registered<br/>phone number?"}
+    
+    A2 -->|"Yes"| A3["Use continuous acknowledgments:<br/>'Ji', 'Haan', 'Okay'<br/>Verify registered phone number"]
+    A2 -->|"No/Different Number"| A4["Request Opus ID for verification<br/>'Verification zaroori rahega'<br/>Use continuous acknowledgments"]
+    
+    A3 --> A5["Confirm customer name<br/>'Naam confirm karne ke liye dhanyawad'"]
+    A4 --> A5
+    
+    A5 --> A6{"Multiple accounts<br/>registered from this number?"}
+    
+    A6 -->|"Yes"| A7["List account options<br/>Request specific Opus ID<br/>'Aap jis account ke baare mein baat kar rahe hain<br/>uska please mujhe Opus ID bata dijiye'"]
+    A6 -->|"No/Single Account"| A8["Confirm registration date<br/>Confirm KYC completion date"]
+    
+    A7 --> A8
+    A8 --> B["Check account details in system<br/>'Main details check kar leti hoon,<br/>kripya line pe bane rahiye'"]
+    
+    B --> B1{"Check for existing<br/>complaints in system"}
+    
+    B1 -->|"Previous Complaint Exists"| B2{"Is previous complaint<br/>still active/within timeline?"}
+    B1 -->|"No Previous Complaint"| C["Check KYC Status in Admin Portal"]
+    
+    B2 -->|"Active - Within Timeline"| B3["Provide existing complaint number<br/>Reiterate timeline<br/>'Aapka complaint number hai [X]<br/>Please [X] days wait kijiye'"]
+    B2 -->|"Closed/Timeline Exceeded"| B4["Apologize for previous closure<br/>'Maafi chahenge, previous complaint<br/>kisi issue ki wajah se close ho gaya tha'<br/>Create HIGH PRIORITY complaint"]
+    
+    B3 --> B5["Console customer<br/>Ask: 'Iske alava koi aur sahayata kar sakti hoon?'"]
+    B4 --> D1["Create High Priority Complaint<br/>PC Sub Type: Painter/contractor Complaints<br/>Type: Opus ID App<br/>Issue: KYC Issue - Escalated<br/>Subject: Repeated complaint - Account Approval pending"]
+    
+    C -->|"Full KYC Complete"| C1["Calculate days since KYC completion<br/>Check: Within 30 days OR Beyond 30 days"]
+    C -->|"Partial KYC or No KYC"| C2["Inform: 'Please complete KYC details<br/>and wait for 30 days from completion'<br/>Set clear expectation"]
+    
+    C1 -->|"Within 30 Days"| C3["Calculate remaining days<br/>Inform: 'Aapko [X] days aur wait karna hoga<br/>KYC completion date se 30 days lagते hain'"]
+    C1 -->|"Beyond 30 Days"| C4["Apologize for delay<br/>'Bahut maafi chahenge aapko jo<br/>asuvidha ho rahi hai uske liye'"]
+    
+    C2 --> E1["Create Enquiry in CRM<br/>Type: General enquiries/Others<br/>Sub Type: Other Enquiries<br/>Enquiry: Opus Care<br/>Issue: Become a Painter/Contractor<br/>Subject: Partial KYC/No KYC-Contractor"]
+    
+    C3 --> E2["Create Enquiry in CRM<br/>Type: General enquiries/Others<br/>Sub Type: Other Enquiries<br/>Enquiry: Opus Care<br/>Issue: Become a Painter/Contractor<br/>Subject: Account Approval pending-Contractor<br/>Note: Within 30-day window"]
+    
+    C4 --> F["Suggest TSM Direct Contact<br/>'Ek baar TSM se baat kijiye<br/>Dealer se number le sakte hain'"]
+    
+    F --> F1["Create Standard Complaint<br/>PC Sub Type: Painter/contractor Complaints<br/>Type: Opus ID App<br/>Issue: KYC Issue<br/>Subject: Account Approval pending-Contractor<br/>Timeline: 7 days"]
+    
+    D1 --> G["Provide complaint details<br/>- Complaint Number<br/>- SMS confirmation<br/>- Timeline (7 days for high priority)<br/>- Console customer maximally"]
+    F1 --> G
+    E1 --> G2["Provide enquiry details<br/>- Enquiry Number<br/>- Expected timeline<br/>- Next steps"]
+    E2 --> G2
+    
+    G --> H["TSM Contact Instructions<br/>'Please nazdiki dealer ke paas visit kijiye<br/>TSM ka number le kar unse baat kar lijiye<br/>Ho sakta hai woh jaldi process karein'"]
+    G2 --> H
+    
+    H --> I["Final Consolation & Follow-up<br/>'Nishchint rahiye, hamari team<br/>jald se jald aapki madad karegi'<br/>Confirm complaint/enquiry number received"]
+    
+    I --> J["Ask: 'Kuch aur sahayata kar sakti hoon?'<br/>(Customer may raise additional issues<br/>or switch to different problems)"]
+    
+    J -->|"Yes - New Issue"| J1{"Is new issue related<br/>to KYC approval?"}
+    J -->|"Yes - Same Issue Clarification"| J2["Address additional questions<br/>Reiterate process and timeline<br/>May need to repeat entire explanation"]
+    J -->|"No"| K["Thank customer<br/>'Birla Opus ke sath jude rehne ke liye dhanyawad<br/>Aapka din shubh rahe'"]
+    
+    J1 -->|"Related (scanning, points, etc.)"| J3["Address related issue<br/>within same call context<br/>Provide appropriate guidance"]
+    J1 -->|"Unrelated Issue"| A["Start fresh process<br/>for new issue type"]
+    
+    J2 --> I
+    J3 --> J
+    
+    B5 --> J
+    K --> L["End Call<br/>Ensure proper call termination<br/>Customer satisfaction confirmed"]
+
+    %% Styling
+    classDef startEnd fill:#c2185b,stroke:#333,stroke-width:2px,color:#fff
+    classDef decision fill:#c2185b,stroke:#333,stroke-width:2px,color:#fff
+    classDef process fill:#2196f3,stroke:#333,stroke-width:2px,color:#fff
+    classDef enquiry fill:#4caf50,stroke:#333,stroke-width:2px,color:#fff
+    classDef verification fill:#ff9800,stroke:#333,stroke-width:2px,color:#fff
+    classDef escalation fill:#f44336,stroke:#333,stroke-width:2px,color:#fff
+    classDef communication fill:#9c27b0,stroke:#333,stroke-width:2px,color:#fff
+    classDef timeline fill:#00bcd4,stroke:#333,stroke-width:2px,color:#fff
+    
+    class A,L startEnd
+    class A2,A6,B1,B2,C,C1,J,J1 decision
+    class A1,A3,A4,A5,A7,A8,B,B3,C2,C3,C4,F,H,I,J2,J3 process
+    class E1,E2,F1 enquiry
+    class B4,D1,G escalation
+    class G2 communication
+    class C1 timeline

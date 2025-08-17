@@ -1,5 +1,7 @@
 import os
 import warnings
+import logging
+import asyncio
 from pathlib import Path
 # from dotenv import load_dotenv
 
@@ -12,6 +14,22 @@ from google.adk.cli.fast_api import get_fast_api_app
 from session_manager import SessionManager
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
+
+# Suppress specific Windows connection reset errors in asyncio
+def exception_handler(loop, context):
+    exception = context.get('exception')
+    if isinstance(exception, (ConnectionResetError, ConnectionAbortedError, OSError)):
+        if hasattr(exception, 'winerror') and exception.winerror in [10054, 10053]:
+            # Silently ignore common Windows connection reset errors
+            return
+    # For other exceptions, use default handler
+    loop.default_exception_handler(context)
+
+# Set custom exception handler for the event loop
+asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy() if os.name == 'nt' else None)
+loop = asyncio.new_event_loop()
+loop.set_exception_handler(exception_handler)
+asyncio.set_event_loop(loop)
 
 # load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent
@@ -63,12 +81,23 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
         await session_manager.start_session(websocket, user_id_str, APP_NAME)
     except WebSocketDisconnect:
         print(f"Client #{user_id} disconnected normally")
+    except (ConnectionResetError, ConnectionAbortedError, OSError) as e:
+        # Suppress common Windows connection errors during cleanup
+        if hasattr(e, 'winerror') and e.winerror in [10054, 10053]:
+            print(f"Client #{user_id} disconnected (connection reset)")
+        else:
+            print(f"Connection error for client #{user_id}: {e}")
     except Exception as e:
         print(f"Error occurred for client #{user_id}: {e}")
     finally:
         # Always cleanup the session when client disconnects
-        await session_manager.end_session(user_id_str)
-        print(f"Session cleanup completed for client #{user_id}")
+        try:
+            await session_manager.end_session(user_id_str)
+            print(f"Session cleanup completed for client #{user_id}")
+        except Exception as cleanup_error:
+            # Suppress cleanup errors on Windows
+            if not (hasattr(cleanup_error, 'winerror') and cleanup_error.winerror in [10054, 10053]):
+                print(f"Cleanup error for client #{user_id}: {cleanup_error}")
 
 BASE_DIR = Path(__file__).resolve().parent
 CERT_PATH = BASE_DIR.parent / "secrets" / "cert.pem"
