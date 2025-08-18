@@ -14,17 +14,17 @@ from google.adk.cli.fast_api import get_fast_api_app
 from session_manager import SessionManager
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler('app.log')
-    ]
-)
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+#     handlers=[
+#         logging.StreamHandler(),
+#         logging.FileHandler('app.log')
+#     ]
+# )
 
 # Suppress asyncio connection reset errors
-logging.getLogger('asyncio').setLevel(logging.WARNING)
+# logging.getLogger('asyncio').setLevel(logging.WARNING)
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
@@ -106,7 +106,7 @@ async def get_tickets():
         }
         
     except Exception as e:
-        logging.error(f"Error fetching tickets: {e}")
+        # logging.error(f"Error fetching tickets: {e}")
         return {"error": "Failed to fetch tickets", "complaints": []}
 
 @app.websocket("/ws/{user_id}")
