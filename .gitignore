@@ -110,7 +110,6 @@ venv.bak/
 gcp.json
 .vscode/
 
-*.pem
 *.terraform
 *.tfvars
 *.tfstate
