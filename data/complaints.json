@@ -1,0 +1,50 @@
+{
+  "complaints": {
+    "PC1000": {
+      "complaint_id": "PC1000",
+      "customer_id": 100,
+      "opus_id": "100100",
+      "mobile_number": "9812345769",
+      "type": "complaint",
+      "category": "Painter/contractor Complaints",
+      "sub_category": "Opus ID App",
+      "issue": "KYC Issue",
+      "subject": "Account Approval pending-Contractor",
+      "status": "active",
+      "created_date": "2025-08-17T19:10:28.653368",
+      "timeline_days": 7,
+      "priority": "normal"
+    },
+    "PC1001": {
+      "complaint_id": "PC1001",
+      "customer_id": 100,
+      "opus_id": "100100",
+      "mobile_number": "9812345769",
+      "type": "complaint",
+      "category": "Painter/contractor Complaints",
+      "sub_category": "Opus ID App",
+      "issue": "KYC Issue",
+      "subject": "Account Approval pending-Contractor",
+      "status": "active",
+      "created_date": "2025-08-17T19:10:36.317670",
+      "timeline_days": 7,
+      "priority": "normal"
+    },
+    "PC1002": {
+      "complaint_id": "PC1002",
+      "customer_id": 100,
+      "opus_id": "100100",
+      "mobile_number": "9812345769",
+      "type": "complaint",
+      "category": "Painter/contractor Complaints",
+      "sub_category": "Opus ID App",
+      "issue": "KYC Issue",
+      "subject": "Account Approval pending-Contractor",
+      "status": "active",
+      "created_date": "2025-08-17T19:17:06.603257",
+      "timeline_days": 7,
+      "priority": "normal"
+    }
+  },
+  "next_counter": 1003
+}

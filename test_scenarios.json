@@ -1,0 +1,268 @@
+{
+  "test_scenarios": {
+    "description": "Test scenarios for Arjun KYC Bot - Each phone number represents a different workflow path",
+    "instructions": "Change the hardcoded phone number in agent.py instruction to test different scenarios",
+
+    "scenarios": [
+      {
+        "id": "T001",
+        "name": "Full KYC - Account Approved (30 days)",
+        "phone_number": "9812345670",
+        "expected_path": "A1 → A2 → A3 → A5 → A6 → A8 → B → B1 → C → C1 → C3 → E2 → G2 → H → I → J → K → L",
+        "description": "Customer with full KYC completed exactly 30 days ago - should create enquiry",
+        "customer_data": {
+          "opus_id": "100001",
+          "name": "Aarav Sharma",
+          "status": "Y",
+          "kyc_status": "F",
+          "days_since_kyc": 30
+        },
+        "expected_outcome": "Create enquiry within 30-day window",
+        "test_phrases": [
+          "My account is not approved yet",
+          "KYC approval pending",
+          "When will my account be activated?"
+        ]
+      },
+
+      {
+        "id": "T002",
+        "name": "Full KYC - Beyond 30 Days",
+        "phone_number": "9812345672",
+        "expected_path": "A1 → A2 → A3 → A5 → A6 → A8 → B → B1 → C → C1 → C4 → F → F1 → G → H → I → J → K → L",
+        "description": "Customer with full KYC completed 35 days ago - should create standard complaint and suggest TSM",
+        "customer_data": {
+          "opus_id": "100003",
+          "name": "Arjun Singh",
+          "status": "R",
+          "kyc_status": "R",
+          "days_since_kyc": 35
+        },
+        "expected_outcome": "Apologize for delay, create standard complaint, suggest TSM contact",
+        "test_phrases": [
+          "It's been more than a month since KYC",
+          "Why is my account still not approved?",
+          "This is taking too long"
+        ]
+      },
+
+      {
+        "id": "T003",
+        "name": "Partial KYC",
+        "phone_number": "9812345671",
+        "expected_path": "A1 → A2 → A3 → A5 → A6 → A8 → B → B1 → C → C2 → E1 → G2 → H → I → J → K → L",
+        "description": "Customer with partial KYC - should inform about completion requirement",
+        "customer_data": {
+          "opus_id": "100002",
+          "name": "Diya Patel",
+          "status": "P",
+          "kyc_status": "P",
+          "days_since_kyc": 27
+        },
+        "expected_outcome": "Inform about KYC completion requirement, create enquiry",
+        "test_phrases": [
+          "My account is pending approval",
+          "What documents do I need to submit?",
+          "KYC is not complete"
+        ]
+      },
+
+      {
+        "id": "T004",
+        "name": "No KYC Done",
+        "phone_number": "9812345675",
+        "expected_path": "A1 → A2 → A3 → A5 → A6 → A8 → B → B1 → C → C2 → E1 → G2 → H → I → J → K → L",
+        "description": "Customer with no KYC done - should inform about KYC requirement",
+        "customer_data": {
+          "opus_id": "100005",
+          "name": "Kabir Kumar",
+          "status": "X",
+          "kyc_status": "N",
+          "days_since_kyc": 31
+        },
+        "expected_outcome": "Inform about KYC completion requirement, create enquiry",
+        "test_phrases": [
+          "I haven't done KYC yet",
+          "How to start KYC process?",
+          "Account not working"
+        ]
+      },
+
+      {
+        "id": "T005",
+        "name": "Within 30 Days - Normal Wait",
+        "phone_number": "9812345677",
+        "expected_path": "A1 → A2 → A3 → A5 → A6 → A8 → B → B1 → C → C1 → C3 → E2 → G2 → H → I → J → K → L",
+        "description": "Customer with full KYC completed 26 days ago - should inform remaining wait time",
+        "customer_data": {
+          "opus_id": "100008",
+          "name": "Ananya Reddy",
+          "status": "Y",
+          "kyc_status": "F",
+          "days_since_kyc": 26
+        },
+        "expected_outcome": "Inform 4 days remaining wait time, create enquiry",
+        "test_phrases": [
+          "How much longer do I need to wait?",
+          "Account approval is taking time",
+          "When will it be ready?"
+        ]
+      },
+
+      {
+        "id": "T006",
+        "name": "Opus ID Verification Required",
+        "phone_number": "9812345695",
+        "expected_path": "A1 → A2 → A4 → A5 → A6 → A8 → B → B1 → C → C1 → C3 → E2 → G2 → H → I → J → K → L",
+        "description": "Customer calling from different number - should ask for Opus ID verification",
+        "customer_data": {
+          "opus_id": "100026",
+          "name": "Pooja Naik",
+          "status": "P",
+          "kyc_status": "P",
+          "days_since_kyc": 31
+        },
+        "expected_outcome": "Request Opus ID verification, then proceed based on KYC status",
+        "test_phrases": [
+          "Calling from friend's phone",
+          "Lost my phone, calling from different number",
+          "This is not my registered number"
+        ]
+      },
+
+      {
+        "id": "T007",
+        "name": "Multiple Accounts Scenario",
+        "phone_number": "9812345716",
+        "expected_path": "A1 → A2 → A3 → A5 → A6 → A7 → A8 → B → B1 → C → C1 → C4 → F → F1 → G → H → I → J → K → L",
+        "description": "Phone number with multiple accounts - should ask for specific Opus ID",
+        "customer_data": {
+          "opus_id": "100047",
+          "name": "Priya Sharma",
+          "status": "D",
+          "kyc_status": "R",
+          "days_since_kyc": 33
+        },
+        "expected_outcome": "List account options, request specific Opus ID",
+        "test_phrases": [
+          "I have multiple accounts",
+          "Which account are you referring to?",
+          "I registered twice by mistake"
+        ]
+      },
+
+      {
+        "id": "T008",
+        "name": "High Priority - Repeated Complaint",
+        "phone_number": "9812345689",
+        "expected_path": "A1 → A2 → A3 → A5 → A6 → A8 → B → B1 → B2 → B4 → D1 → G → H → I → J → K → L",
+        "description": "Customer with previous closed complaint - should create high priority complaint",
+        "customer_data": {
+          "opus_id": "100020",
+          "name": "Sana Khan",
+          "status": "D",
+          "kyc_status": "P",
+          "days_since_kyc": 32
+        },
+        "expected_outcome": "Apologize for previous closure, create HIGH PRIORITY complaint",
+        "test_phrases": [
+          "I complained before but nothing happened",
+          "You closed my previous complaint without resolution",
+          "This is my second time calling"
+        ]
+      },
+
+      {
+        "id": "T009",
+        "name": "Active Complaint Exists",
+        "phone_number": "9812345698",
+        "expected_path": "A1 → A2 → A3 → A5 → A6 → A8 → B → B1 → B2 → B3 → B5 → J → K → L",
+        "description": "Customer with active complaint in system - should provide existing complaint details",
+        "customer_data": {
+          "opus_id": "100029",
+          "name": "Gaurav Chopra",
+          "status": "P",
+          "kyc_status": "P",
+          "days_since_kyc": 32
+        },
+        "expected_outcome": "Provide existing complaint number and timeline",
+        "test_phrases": [
+          "What's the status of my complaint?",
+          "I called last week about this issue",
+          "Following up on my previous complaint"
+        ]
+      },
+
+      {
+        "id": "T010",
+        "name": "Customer with Additional Questions",
+        "phone_number": "9812345719",
+        "expected_path": "A1 → A2 → A3 → A5 → A6 → A8 → B → B1 → C → C1 → C3 → E2 → G2 → H → I → J → J2 → I → J → K → L",
+        "description": "Customer who asks follow-up questions after getting complaint number",
+        "customer_data": {
+          "opus_id": "100050",
+          "name": "Amit Chandra",
+          "status": "R",
+          "kyc_status": "N",
+          "days_since_kyc": 25
+        },
+        "expected_outcome": "Address additional questions, repeat process explanation if needed",
+        "test_phrases": [
+          "What exactly happens after 7 days?",
+          "Can you explain the process again?",
+          "What if nothing happens after the timeline?"
+        ]
+      }
+    ],
+
+    "testing_instructions": {
+      "setup": [
+        "1. Change the hardcoded phone number in src/google_custom_agent/agent.py",
+        "2. Look for 'HARDCODED PHONE NUMBER: For this session, assume the customer is calling from phone number'",
+        "3. Replace 9812345670 with the phone number from your chosen test scenario",
+        "4. Restart the server to load the new phone number"
+      ],
+
+      "testing_process": [
+        "1. Start the conversation with audio or text",
+        "2. Wait for Arjun's greeting: 'Namaste, welcome to Birla Opus. My name is Arjun, how can I help you?'",
+        "3. Use the test phrases provided for each scenario",
+        "4. Observe if Arjun follows the expected workflow path",
+        "5. Verify the expected outcome is achieved",
+        "6. Test the 'Kuch aur sahayata kar sakta hoon?' closing question"
+      ],
+
+      "validation_points": [
+        "✓ Proper Hindi-English greeting",
+        "✓ Phone number/Opus ID verification",
+        "✓ Customer name confirmation",
+        "✓ System lookup and complaint checking",
+        "✓ Correct decision based on KYC status",
+        "✓ Appropriate complaint/enquiry creation",
+        "✓ Timeline communication",
+        "✓ TSM contact guidance (when applicable)",
+        "✓ Empathetic language and consolation",
+        "✓ Proper closing with additional help offer"
+      ]
+    },
+
+    "edge_cases": [
+      {
+        "name": "Customer provides wrong Opus ID",
+        "phone_number": "9999999999",
+        "description": "Test how bot handles non-existent customer data",
+        "expected": "Should ask for correct Opus ID or phone number verification"
+      },
+      {
+        "name": "Customer interrupts workflow",
+        "description": "Customer asks unrelated questions mid-conversation",
+        "expected": "Should handle gracefully and guide back to KYC workflow"
+      },
+      {
+        "name": "Customer wants to speak to human",
+        "description": "Customer requests to talk to a human agent",
+        "expected": "Should explain current process and offer to escalate if needed"
+      }
+    ]
+  }
+}

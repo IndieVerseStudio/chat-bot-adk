@@ -5,6 +5,8 @@ import base64
 from google.genai.types import (
     Part,
     Blob,
+    SpeechConfig,
+    PrebuiltVoiceConfig,
 )
 
 from google.adk.runners import InMemoryRunner
@@ -68,8 +70,38 @@ class UserSession:
             user_id=self.user_id,
         )
 
-        # Set response modality
-        run_config = RunConfig(response_modalities=["Audio"])
+        # Set response modality with Hindi male voice
+        # Try Hindi male voice names - if one doesn't work, fallback to next option
+        hindi_male_voices = [
+            "hi-IN-Wavenet-B",  # Primary Hindi male voice
+            "hi-IN-Wavenet-C",  # Secondary Hindi male voice
+            "hi-IN-Standard-B", # Standard Hindi male voice
+            "Pogue"             # Fallback male voice
+        ]
+        
+        run_config = None
+        for voice_name in hindi_male_voices:
+            try:
+                print(f"Trying voice: {voice_name}")
+                male_voice = PrebuiltVoiceConfig(voice_name=voice_name)
+                speech_config = SpeechConfig(
+                    voice_config=male_voice,
+                    language_code="hi-IN"  # Hindi (India) language code
+                )
+                run_config = RunConfig(
+                    response_modalities=["Audio"],
+                    speech_config=speech_config
+                )
+                print(f"✓ Successfully configured Hindi male voice: {voice_name}")
+                break
+            except Exception as e:
+                print(f"Voice {voice_name} failed: {e}")
+                continue
+        
+        # Final fallback to default if all voice configurations fail
+        if run_config is None:
+            print("All voice configurations failed, using default")
+            run_config = RunConfig(response_modalities=["Audio"])
 
         # Create a LiveRequestQueue for this session
         live_request_queue = LiveRequestQueue()
