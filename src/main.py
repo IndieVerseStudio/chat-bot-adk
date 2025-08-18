@@ -1,5 +1,7 @@
 import os
 import warnings
+import logging
+import json
 from pathlib import Path
 # from dotenv import load_dotenv
 
@@ -10,6 +12,19 @@ import uvicorn
 from google.adk.cli.fast_api import get_fast_api_app
 
 from session_manager import SessionManager
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('app.log')
+    ]
+)
+
+# Suppress asyncio connection reset errors
+logging.getLogger('asyncio').setLevel(logging.WARNING)
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
@@ -45,10 +60,54 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 # Create a global session manager instance
 session_manager = SessionManager()
 
+
+
 @app.get("/")
 async def root():
     """Serves the index.html"""
     return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+
+
+
+@app.get("/api/tickets")
+async def get_tickets():
+    """API endpoint to get all tickets/complaints"""
+    try:
+        # Import the KYC tools to access the data manager
+        from kyc_tools import CustomerDataManager
+        
+        # Create data manager instance
+        data_manager = CustomerDataManager()
+        
+        # Get all complaints
+        complaints_data = {}
+        for complaint_id, complaint in data_manager.complaints.items():
+            complaints_data[complaint_id] = {
+                "complaint_id": complaint.complaint_id,
+                "customer_id": complaint.customer_id,
+                "opus_id": complaint.opus_id,
+                "mobile_number": complaint.mobile_number,
+                "type": complaint.type,
+                "category": complaint.category,
+                "sub_category": complaint.sub_category,
+                "issue": complaint.issue,
+                "subject": complaint.subject,
+                "status": complaint.status,
+                "created_date": complaint.created_date.isoformat(),
+                "timeline_days": complaint.timeline_days,
+                "priority": complaint.priority
+            }
+        
+        return {
+            "complaints": list(complaints_data.values()),
+            "total": len(complaints_data),
+            "active": len([c for c in complaints_data.values() if c["status"] == "active"]),
+            "high_priority": len([c for c in complaints_data.values() if c["priority"] == "high"])
+        }
+        
+    except Exception as e:
+        logging.error(f"Error fetching tickets: {e}")
+        return {"error": "Failed to fetch tickets", "complaints": []}
 
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
@@ -69,6 +128,10 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
         # Always cleanup the session when client disconnects
         await session_manager.end_session(user_id_str)
         print(f"Session cleanup completed for client #{user_id}")
+
+
+
+
 
 BASE_DIR = Path(__file__).resolve().parent
 CERT_PATH = BASE_DIR.parent / "secrets" / "cert.pem"

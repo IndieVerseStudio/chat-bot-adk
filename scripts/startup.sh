@@ -9,6 +9,11 @@ sudo apt-get install -y python3-pip python3-venv
 echo "Cloning the chat-bot-adk repository..."
 git clone https://github.com/IndieVerseStudio/chat-bot-adk.git /opt/chat-bot-adk
 
+# Checkout the Promp_test_1 branch
+echo "Checking out Promp_test_1 branch..."
+cd /opt/chat-bot-adk
+git checkout Promp_test_1
+
 # Create a virtual environment
 echo "Creating a virtual environment..."
 python3 -m venv /opt/chat-bot-adk/venv

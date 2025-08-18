@@ -1,6 +1,7 @@
 const sessionId = Math.random().toString().substring(10);
 const ws_url = "wss://" + window.location.host + "/ws/" + sessionId;
 let websocket = null;
+let promptSent = false;
 
 function connectWebsocket() {
   websocket = new WebSocket(ws_url);
@@ -16,6 +17,12 @@ function connectWebsocket() {
     // Handle instruction update response
     if (message_from_server.type === "instruction_updated") {
       console.log("Agent instructions updated successfully");
+      promptSent = true;
+      updateStatus(
+        "Prompt set successfully! You can now start talking.",
+        "conversation-ready"
+      );
+      enableStartButton();
       return;
     }
 
@@ -60,6 +67,22 @@ function sendMessage(message) {
     const messageJson = JSON.stringify(message);
     websocket.send(messageJson);
   }
+}
+
+function updateStatus(message, className = "") {
+  const statusText = document.getElementById("statusText");
+  statusText.textContent = message;
+  statusText.className = "status-text " + className;
+}
+
+function enableStartButton() {
+  const startButton = document.getElementById("startAudioButton");
+  startButton.disabled = false;
+}
+
+function disableStartButton() {
+  const startButton = document.getElementById("startAudioButton");
+  startButton.disabled = true;
 }
 
 // Decode Base64 data to Array
@@ -108,14 +131,54 @@ function startAudio() {
   );
 }
 
+// Get DOM elements
+const startAudioButton = document.getElementById("startAudioButton");
+const sendPromptButton = document.getElementById("sendPromptButton");
+const customPromptTextarea = document.getElementById("customPrompt");
+
+// Handle prompt sending
+sendPromptButton.addEventListener("click", () => {
+  const customPrompt = customPromptTextarea.value.trim();
+
+  if (!websocket || websocket.readyState !== WebSocket.OPEN) {
+    // Connect first if not connected
+    connectWebsocket();
+
+    // Wait for connection to be established
+    websocket.onopen = function () {
+      sendCustomPrompt(customPrompt);
+    };
+  } else {
+    sendCustomPrompt(customPrompt);
+  }
+});
+
+function sendCustomPrompt(prompt) {
+  sendPromptButton.disabled = true;
+  updateStatus("Setting prompt...", "");
+
+  const message = {
+    type: "update_instruction",
+    instruction: prompt || null, // Send null if empty to use default
+  };
+
+  sendMessage(message);
+}
+
 // Start the audio only when the user clicked the button
 // (due to the gesture requirement for the Web Audio API)
-const startAudioButton = document.getElementById("startAudioButton");
-
 startAudioButton.addEventListener("click", () => {
+  if (!promptSent) {
+    updateStatus(
+      "Please set a prompt first before starting the conversation.",
+      ""
+    );
+    return;
+  }
+
   startAudioButton.disabled = true;
   startAudio();
-  connectWebsocket(); // reconnect with the audio mode
+  updateStatus("Starting conversation...", "");
 });
 
 // Audio recorder handler
@@ -182,4 +245,120 @@ function arrayBufferToBase64(buffer) {
     binary += String.fromCharCode(bytes[i]);
   }
   return window.btoa(binary);
+}
+
+// Tickets functionality
+let ticketsData = [];
+
+// Load tickets on page load
+document.addEventListener("DOMContentLoaded", function () {
+  loadTickets();
+
+  // Add refresh button event listener
+  const refreshBtn = document.getElementById("refreshTicketsBtn");
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", loadTickets);
+  }
+});
+
+async function loadTickets() {
+  const container = document.getElementById("ticketsContainer");
+  if (!container) return;
+
+  try {
+    container.innerHTML =
+      '<div class="loading-tickets">Loading tickets...</div>';
+
+    const response = await fetch("/api/tickets");
+    const data = await response.json();
+
+    if (data.error) {
+      showTicketsError(data.error);
+      return;
+    }
+
+    ticketsData = data.complaints || [];
+    renderTickets();
+  } catch (error) {
+    console.error("Error loading tickets:", error);
+    showTicketsError("Failed to load tickets. Please try again.");
+  }
+}
+
+function renderTickets() {
+  const container = document.getElementById("ticketsContainer");
+  if (!container) return;
+
+  if (ticketsData.length === 0) {
+    container.innerHTML = '<div class="no-tickets">No tickets found.</div>';
+    return;
+  }
+
+  // Show only the 5 most recent tickets
+  const recentTickets = ticketsData
+    .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
+    .slice(0, 5);
+
+  const ticketsHTML = recentTickets
+    .map((ticket) => createTicketItem(ticket))
+    .join("");
+  container.innerHTML = ticketsHTML;
+}
+
+function createTicketItem(ticket) {
+  const statusClass = getTicketStatusClass(ticket.status, ticket.priority);
+  const priorityClass = ticket.priority === "high" ? "high-priority" : "";
+  const cardClass = `ticket-item ${statusClass} ${priorityClass}`;
+
+  const createdDate = new Date(ticket.created_date).toLocaleDateString();
+  const timelineText = ticket.timeline_days
+    ? `${ticket.timeline_days} days`
+    : "N/A";
+
+  return `
+    <div class="${cardClass}">
+      <div class="ticket-header">
+        <div class="ticket-id">#${ticket.complaint_id}</div>
+        <div class="ticket-status ${getTicketStatusClass(
+          ticket.status,
+          ticket.priority
+        )}">
+          ${getTicketStatusText(ticket.status, ticket.priority)}
+        </div>
+      </div>
+      
+      <div class="ticket-customer">
+        Customer ID: ${ticket.customer_id} | Opus ID: ${ticket.opus_id}
+      </div>
+      
+      <div class="ticket-subject">${ticket.subject}</div>
+      <div class="ticket-issue">${ticket.issue}</div>
+      
+      <div class="ticket-meta">
+        <span>📅 ${createdDate}</span>
+        <span>⏱️ ${timelineText}</span>
+      </div>
+    </div>
+  `;
+}
+
+function getTicketStatusClass(status, priority) {
+  if (priority === "high") return "status-high-priority";
+  if (status === "active") return "status-active";
+  if (status === "closed") return "status-closed";
+  return "";
+}
+
+function getTicketStatusText(status, priority) {
+  if (priority === "high") return "High Priority";
+  if (status === "active") return "Active";
+  if (status === "closed") return "Closed";
+  return status;
+}
+
+function showTicketsError(message) {
+  const container = document.getElementById("ticketsContainer");
+  if (container) {
+    container.innerHTML = `<div class="tickets-error">❌ ${message}</div>`;
+  }
 }

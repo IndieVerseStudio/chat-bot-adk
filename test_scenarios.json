@@ -1,6 +1,6 @@
 {
   "test_scenarios": {
-    "description": "Test scenarios for Arjun KYC Bot - Each phone number represents a different workflow path",
+    "description": "Test scenarios for Priya KYC Bot - Each phone number represents a different workflow path",
     "instructions": "Change the hardcoded phone number in agent.py instruction to test different scenarios",
 
     "scenarios": [
@@ -33,7 +33,7 @@
         "description": "Customer with full KYC completed 35 days ago - should create standard complaint and suggest TSM",
         "customer_data": {
           "opus_id": "100003",
-          "name": "Arjun Singh",
+          "name": "Priya Singh",
           "status": "R",
           "kyc_status": "R",
           "days_since_kyc": 35

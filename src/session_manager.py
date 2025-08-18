@@ -10,10 +10,12 @@ from google.genai.types import (
 )
 
 from google.adk.runners import InMemoryRunner
-from google.adk.agents import LiveRequestQueue
+from google.adk.agents import LiveRequestQueue, Agent
 from google.adk.agents.run_config import RunConfig
+import logging
 
 from google_custom_agent.agent import root_agent
+from google_custom_agent.kyc_tools_wrapper import kyc_tools
 
 class SessionManager:
     def __init__(self):
@@ -54,14 +56,35 @@ class UserSession:
         self.user_id = user_id
         self.live_request_queue = None
         self.tasks = []
+        self.custom_instruction = None
+        self.websocket = None
+        self.restart_requested = False
 
     async def start_agent_session(self):
         """Starts an agent session"""
+        logging.info(f"Starting agent session for user #{self.user_id}")
+        
+        # Create a Runner with custom instruction if provided
+        if self.custom_instruction:
+            logging.info(f"Using custom instruction for user #{self.user_id}: {self.custom_instruction}")
+            # Create a custom agent with the user's instruction
+            custom_agent = Agent(
+                name="custom_agent",
+                model="gemini-2.5-flash-preview-native-audio-dialog",
+                description="Custom AI assistant based on user instructions.",
+                instruction=self.custom_instruction,
+                tools=kyc_tools,
+            )
+            agent_to_use = custom_agent
+        else:
+            logging.info(f"Using default instruction for user #{self.user_id}")
+            # Use the default agent
+            agent_to_use = root_agent
         
         # Create a Runner
         runner = InMemoryRunner(
             app_name=self.app_name,
-            agent=root_agent,
+            agent=agent_to_use,
         )
         
         # Create a Session
@@ -159,24 +182,39 @@ class UserSession:
                 # Decode JSON message
                 message_json = await websocket.receive_text()
                 message = json.loads(message_json)
-                mime_type = message["mime_type"]
-                data = message["data"]
-
+                
+                # Handle instruction updates
                 if message.get("type") == "update_instruction":
                     instruction = message.get("instruction")
-                    if instruction:
-                        response = {
-                            "type": "instruction_updated",
-                            "message": "Agent instruction updated successfully"
-                        }
-                        await websocket.send_text(json.dumps(response))
+                    # Set custom instruction (None for default, string for custom)
+                    self.custom_instruction = instruction
+                    logging.info(f"Custom instruction updated for user #{self.user_id}: {self.custom_instruction}")
+                    
+                    # Start the agent session with the instruction
+                    await self._start_agent_session()
+                    
+                    response = {
+                        "type": "instruction_updated",
+                        "message": "Agent instruction updated successfully"
+                    }
+                    await websocket.send_text(json.dumps(response))
+                    continue
+
+                # Handle regular messages
+                mime_type = message.get("mime_type")
+                data = message.get("data")
+                
+                if not mime_type or not data:
                     continue
 
                 # Send the message to the agent
                 if mime_type == "audio/pcm":
                     # Send an audio data
+                    if self.live_request_queue is None:
+                        logging.warning(f"No live_request_queue available for user #{self.user_id}, agent session not started yet")
+                        continue
                     decoded_data = base64.b64decode(data)
-                    live_request_queue.send_realtime(Blob(data=decoded_data, mime_type=mime_type))
+                    self.live_request_queue.send_realtime(Blob(data=decoded_data, mime_type=mime_type))
                 else:
                     raise ValueError(f"Mime type not supported: {mime_type}")
         except Exception as e:
@@ -184,17 +222,20 @@ class UserSession:
             raise
 
     async def start_session(self, websocket):
-        live_events, live_request_queue = await self.start_agent_session()
+        """Start the session"""
+        self.websocket = websocket
+        await self._run_session_without_agent()
 
-        # Start tasks
-        agent_to_client_task = asyncio.create_task(
-            self.agent_to_client_messaging(websocket, live_events)
-        )
+    async def _run_session_without_agent(self):
+        """Run session without agent initially, wait for instruction"""
+        logging.info(f"Starting session without agent for user #{self.user_id}")
+        
+        # Start only the client messaging task initially
         client_to_agent_task = asyncio.create_task(
-            self.client_to_agent_messaging(websocket, live_request_queue)
+            self.client_to_agent_messaging(self.websocket, None)
         )
 
-        self.tasks = [agent_to_client_task, client_to_agent_task]
+        self.tasks = [client_to_agent_task]
 
         try:
             # Wait until the websocket is disconnected or an error occurs
@@ -221,4 +262,26 @@ class UserSession:
         except Exception as e:
             print(f"Session error for user #{self.user_id}: {e}")
             raise
+
+    async def _start_agent_session(self):
+        """Start the agent session after instruction is set"""
+        logging.info(f"Starting agent session for user #{self.user_id}")
+        
+        # Create the agent session
+        live_events, live_request_queue = await self.start_agent_session()
+        
+        # Start agent to client messaging task
+        agent_to_client_task = asyncio.create_task(
+            self.agent_to_client_messaging(self.websocket, live_events)
+        )
+        
+        # Add the new task to the list
+        self.tasks.append(agent_to_client_task)
+        
+        # Update the client messaging to use the new queue
+        self.live_request_queue = live_request_queue
+
+
+
+
 
