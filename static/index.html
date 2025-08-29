@@ -1,125 +1,820 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PRIYA - Birla Opus Customer Care</title>
-    <script src="/static/js/app.js" type="module"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Bot</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          sans-serif;
-        background: #f8f9fa;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #2c3e50;
-        padding: 20px;
-      }
-
-      .container {
-        background: white;
-        border-radius: 12px;
-        padding: 40px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        text-align: center;
-        max-width: 400px;
-        width: 100%;
-      }
-
-      h1 {
-        font-size: 1.8em;
-        margin-bottom: 30px;
-        font-weight: 300;
-        color: #2c3e50;
-        letter-spacing: -0.5px;
-      }
-
-      #startAudioButton {
-        background: #2c3e50;
-        border: none;
-        color: white;
-        padding: 16px 32px;
-        font-size: 14px;
-        font-weight: 500;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin: 10px 0;
-      }
-
-      #startAudioButton:hover {
-        background: #34495e;
-        transform: translateY(-1px);
-      }
-
-      #startAudioButton:active {
-        transform: translateY(0);
-      }
-
-      #startAudioButton:disabled {
-        background: #95a5a6;
-        cursor: not-allowed;
-        transform: none;
-      }
-
-      .status-text {
-        margin-top: 16px;
-        font-size: 13px;
-        color: #7f8c8d;
-        font-weight: 400;
-      }
-
-      @media (max-width: 600px) {
-        .container {
-          padding: 30px 20px;
-          margin: 10px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        h1 {
-          font-size: 1.6em;
-          margin-bottom: 25px;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        #startAudioButton {
-          padding: 14px 28px;
-          font-size: 13px;
+        .chat-container {
+            width: 90%;
+            max-width: 800px;
+            height: 80vh;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
-      }
+
+        .chat-header {
+            background: #f8f9fa;
+            color: #333;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h1 {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .session-info {
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: white;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: #007bff;
+            color: white;
+        }
+
+        .message.bot .message-content {
+            background: #f1f1f1;
+            color: #333;
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-container {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 25px;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        #messageInput:focus {
+            border-color: #667eea;
+        }
+
+        #sendButton, .btn {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        #sendButton:hover:not(:disabled), .btn:hover:not(:disabled) {
+            background: #0056b3;
+        }
+
+        #sendButton:disabled, .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .mic-button {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            background: #28a745;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+
+        .mic-button:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .mic-button.recording {
+            background: #dc3545;
+            animation: pulse 1.5s infinite;
+        }
+
+        .mic-button.recording:hover {
+            background: #c82333;
+        }
+
+        .mic-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+            }
+        }
+
+        .recording-status {
+            display: none;
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #6c757d;
+        }
+
+        .status {
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 0;
+        }
+
+        .typing-dots {
+            display: inline-block;
+            position: relative;
+        }
+
+        .typing-dots span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #999;
+            margin: 0 2px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
     </style>
-  </head>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Chat Bot</h1>
+            <div class="header-buttons">
+                <button id="complaintsBtn" class="btn btn-secondary">View Complaints</button>
+                <button id="newSessionBtn" class="btn">Start Session</button>
+            </div>
+        </div>
+        
+        <div class="session-info">
+            <span id="sessionStatus">Initializing...</span>
+        </div>
 
-  <body>
-    <div class="container">
-      <h1>PRIYA - Birla Opus Customer Care</h1>
+        <div class="status" id="statusBar" style="display: none;"></div>
 
-      <button type="button" id="startAudioButton">Start Voice Chat</button>
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be populated automatically -->
+        </div>
 
-      <div class="status-text" id="statusText"></div>
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="message bot">
+                <div class="message-content">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-      <div
-        style="
-          margin-top: 20px;
-          font-size: 12px;
-          color: #7f8c8d;
-          text-align: left;
-        "
-      >
-        <strong>How to test:</strong><br />
-        1. Click "Start Voice Chat"<br />
-        2. Say "Hi" or mention KYC approval issues<br />
-        3. PRIYA will automatically use a test customer profile<br />
-        4. PRIYA will lookup details and create JSON tickets as needed
-      </div>
+        <div class="chat-input">
+            <div class="input-container">
+                <input type="text" id="messageInput" placeholder="Type your message or click mic to speak..." disabled>
+                <button id="micButton" class="mic-button" disabled title="Click to record voice message">
+                    🎤
+                </button>
+            </div>
+            <button id="sendButton" disabled>Send</button>
+            <span id="recordingStatus" class="recording-status">Recording...</span>
+        </div>
     </div>
-  </body>
+
+    <script>
+        let sessionId = null;
+        let isSessionActive = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let audioContext = null;
+        let isAudioEnabled = false;
+
+        const API_BASE = 'http://localhost:8000';
+        
+        // DOM elements
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const micButton = document.getElementById('micButton');
+        const recordingStatus = document.getElementById('recordingStatus');
+        const chatMessages = document.getElementById('chatMessages');
+        const sessionStatus = document.getElementById('sessionStatus');
+        const newSessionBtn = document.getElementById('newSessionBtn');
+        const statusBar = document.getElementById('statusBar');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        // Event listeners
+        newSessionBtn.addEventListener('click', createSession);
+        sendButton.addEventListener('click', sendMessage);
+        micButton.addEventListener('click', toggleRecording);
+        document.getElementById('complaintsBtn').addEventListener('click', viewComplaints);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !sendButton.disabled) {
+                sendMessage();
+            }
+        });
+
+        // Auto-initialize when page loads
+        window.addEventListener('DOMContentLoaded', initializeChat);
+
+        // Enable audio on first user interaction
+        function enableAudio() {
+            if (!isAudioEnabled) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                    isAudioEnabled = true;
+                    console.log('🔊 Audio context enabled for immediate playback');
+                } catch (e) {
+                    console.log('Audio context creation failed:', e);
+                }
+            }
+        }
+
+        // Enable audio on multiple user interaction types
+        document.addEventListener('click', enableAudio);
+        document.addEventListener('keydown', enableAudio);
+        document.addEventListener('touchstart', enableAudio);
+        document.addEventListener('mousedown', enableAudio);
+        
+        // Try to enable audio immediately (some browsers allow this)
+        try {
+            enableAudio();
+        } catch (e) {
+            console.log('Immediate audio enable failed, waiting for user interaction');
+        }
+
+        // Initialize chat automatically
+        async function initializeChat() {
+            try {
+                // Automatically create session and get welcome message
+                await createSession(true); // Pass true to indicate auto-init
+            } catch (error) {
+                console.error('Error initializing chat:', error);
+                sessionStatus.textContent = 'Failed to initialize. Click "Start Session" to try again.';
+            }
+        }
+
+        // Create a new session
+        async function createSession(autoInit = false) {
+            try {
+                showStatus('Creating session...', 'success');
+                newSessionBtn.disabled = true;
+                newSessionBtn.textContent = 'Creating...';
+
+                const response = await fetch(`${API_BASE}/session`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                sessionId = data.session_id;
+                isSessionActive = true;
+
+                // Update UI
+                sessionStatus.textContent = `Session Active | ID: ${sessionId.substring(0, 8)}...`;
+                newSessionBtn.textContent = 'New Session';
+                newSessionBtn.disabled = false;
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                micButton.disabled = false;
+                messageInput.focus();
+                
+                // Enable audio immediately on session creation
+                enableAudio();
+
+                // Clear messages only if it's a manual session creation
+                if (!autoInit) {
+                    chatMessages.innerHTML = '';
+                }
+                
+                showStatus('Session created successfully!', 'success');
+                setTimeout(hideStatus, 3000);
+
+                // If auto-initializing, send "hi" to get bot's welcome message
+                if (autoInit) {
+                    setTimeout(async () => {
+                        try {
+                            showTyping();
+                            const response = await fetch(`${API_BASE}/chat`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    session_id: sessionId,
+                                    message: 'hi'
+                                })
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+
+                            const chatData = await response.json();
+                            hideTyping();
+                            addMessage(chatData.response, 'bot', chatData.audio_data);
+                        } catch (error) {
+                            console.error('Error getting welcome message:', error);
+                            hideTyping();
+                            addMessage('Hello! I\'m here to help you. How can I assist you today?', 'bot');
+                        }
+                    }, 500); // Small delay to make it feel natural
+                }
+
+            } catch (error) {
+                console.error('Error creating session:', error);
+                showStatus('Failed to create session. Please try again.', 'error');
+                newSessionBtn.disabled = false;
+                newSessionBtn.textContent = 'Start Session';
+                setTimeout(hideStatus, 5000);
+            }
+        }
+
+        // Send a message
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || !isSessionActive) return;
+
+            // Add user message to chat
+            addMessage(message, 'user');
+            messageInput.value = '';
+            
+            // Disable input while processing
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+            showTyping();
+
+            try {
+                const response = await fetch(`${API_BASE}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: message
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Add bot response to chat with audio
+                hideTyping();
+                addMessage(data.response, 'bot', data.audio_data);
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                hideTyping();
+                addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+                showStatus('Failed to send message. Please try again.', 'error');
+                setTimeout(hideStatus, 5000);
+            } finally {
+                // Re-enable input
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        // Add message to chat
+        function addMessage(text, sender, audioData = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = text;
+            
+            messageDiv.appendChild(contentDiv);
+            
+            // Add audio player for bot messages with audio and FORCE immediate playback
+            if (sender === 'bot' && audioData) {
+                // Create hidden audio element for immediate playback
+                const hiddenAudio = document.createElement('audio');
+                hiddenAudio.preload = 'auto';
+                hiddenAudio.style.display = 'none';
+                
+                // Create visible audio controls
+                const audioPlayer = document.createElement('audio');
+                audioPlayer.controls = true;
+                audioPlayer.style.width = '100%';
+                audioPlayer.style.marginTop = '8px';
+                
+                // Convert base64 to audio blob
+                const audioBlob = base64ToBlob(audioData, 'audio/mp3');
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                // Set source for both elements
+                hiddenAudio.src = audioUrl;
+                audioPlayer.src = audioUrl;
+                
+                // Force immediate playback using multiple strategies
+                const forcePlay = async () => {
+                    try {
+                        // Strategy 1: Direct play on hidden element
+                        await hiddenAudio.play();
+                        console.log('✅ Audio playing automatically (hidden)');
+                    } catch (e1) {
+                        try {
+                            // Strategy 2: Play on visible element
+                            await audioPlayer.play();
+                            console.log('✅ Audio playing automatically (visible)');
+                        } catch (e2) {
+                            // Strategy 3: Use Web Audio API for immediate playback
+                            try {
+                                enableAudio();
+                                if (audioContext && audioContext.state === 'running') {
+                                    const source = audioContext.createMediaElementSource(hiddenAudio);
+                                    source.connect(audioContext.destination);
+                                    await hiddenAudio.play();
+                                    console.log('✅ Audio playing via Web Audio API');
+                                } else {
+                                    throw new Error('AudioContext not available');
+                                }
+                            } catch (e3) {
+                                console.log('❌ All autoplay methods failed, user must click');
+                                // Visual feedback for manual play
+                                audioPlayer.style.border = '3px solid #ff6b6b';
+                                audioPlayer.style.borderRadius = '8px';
+                                audioPlayer.style.boxShadow = '0 0 10px rgba(255, 107, 107, 0.5)';
+                                audioPlayer.title = '🔊 Click to play voice response';
+                            }
+                        }
+                    }
+                };
+                
+                // Load and play immediately
+                hiddenAudio.onloadeddata = forcePlay;
+                hiddenAudio.load();
+                
+                // Add both elements to message
+                messageDiv.appendChild(hiddenAudio);
+                messageDiv.appendChild(audioPlayer);
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Helper function to convert base64 to blob
+        function base64ToBlob(base64, mimeType) {
+            const byteCharacters = atob(base64);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            return new Blob([byteArray], { type: mimeType });
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            statusBar.textContent = message;
+            statusBar.className = `status ${type}`;
+            statusBar.style.display = 'block';
+        }
+
+        // Hide status message
+        function hideStatus() {
+            statusBar.style.display = 'none';
+        }
+
+        // Show typing indicator
+        function showTyping() {
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Hide typing indicator
+        function hideTyping() {
+            typingIndicator.style.display = 'none';
+        }
+
+        // Toggle audio recording
+        async function toggleRecording() {
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        // Start audio recording
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        sampleRate: 44100
+                    } 
+                });
+                
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    await sendAudioMessage(audioBlob);
+                    
+                    // Stop all tracks to release microphone
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                
+                // Update UI
+                micButton.classList.add('recording');
+                micButton.textContent = '⏹️';
+                micButton.title = 'Click to stop recording';
+                recordingStatus.style.display = 'inline';
+                messageInput.placeholder = 'Recording... Click stop when done';
+                
+                showStatus('Recording audio...', 'success');
+                
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                showStatus('Failed to start recording. Please check microphone permissions.', 'error');
+                setTimeout(hideStatus, 5000);
+            }
+        }
+
+        // Stop audio recording
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                
+                // Update UI
+                micButton.classList.remove('recording');
+                micButton.textContent = '🎤';
+                micButton.title = 'Click to record voice message';
+                recordingStatus.style.display = 'none';
+                messageInput.placeholder = 'Type your message or click mic to speak...';
+                
+                showStatus('Processing audio...', 'success');
+            }
+        }
+
+        // Send audio message to backend
+        async function sendAudioMessage(audioBlob) {
+            try {
+                showTyping();
+                
+                const formData = new FormData();
+                formData.append('file', audioBlob, 'audio.wav');
+                formData.append('session_id', sessionId);
+                
+                const response = await fetch(`${API_BASE}/audio-chat?session_id=${sessionId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                hideTyping();
+                
+                if (data.status === 'success') {
+                    // Show transcription as user message
+                    addMessage(data.transcription, 'user');
+                    // Show bot response with audio
+                    addMessage(data.response, 'bot', data.audio_data);
+                    showStatus('Audio processed successfully!', 'success');
+                } else {
+                    addMessage(data.response || 'Sorry, I could not process your audio message.', 'bot');
+                    showStatus(data.error || 'Audio processing failed', 'error');
+                }
+                
+                setTimeout(hideStatus, 3000);
+                
+            } catch (error) {
+                console.error('Error sending audio:', error);
+                hideTyping();
+                addMessage('Sorry, there was an error processing your audio message. Please try again.', 'bot');
+                showStatus('Failed to process audio. Please try again.', 'error');
+                setTimeout(hideStatus, 5000);
+            }
+        }
+
+        // View complaints
+        async function viewComplaints() {
+            try {
+                showStatus('Loading complaints...', 'success');
+                
+                const response = await fetch(`${API_BASE}/complaints`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // DON'T clear messages - just add complaints to existing chat
+                
+                if (data.total === 0) {
+                    addMessage('📋 No complaints found in the system.', 'bot');
+                } else {
+                    addMessage(`📋 Found ${data.total} complaints and enquiries:`, 'bot');
+                    
+                    data.complaints.forEach((item, index) => {
+                        let detailsText = '';
+                        
+                        if (item.type === 'enquiry') {
+                            // Format enquiry details
+                            detailsText = `🎫 ENQUIRY #${index + 1}\n` +
+                                        `📋 Number: ${item.enquiry_number || 'N/A'}\n` +
+                                        `👤 Customer: ${item.customer_name || 'N/A'}\n` +
+                                        `🆔 Opus ID: ${item.opus_id || 'N/A'}\n` +
+                                        `📝 Type: ${item.enquiry_type || 'N/A'}\n` +
+                                        `📄 Subject: ${item.subject || 'N/A'}\n` +
+                                        `📋 Description: ${item.description || 'N/A'}\n` +
+                                        `📊 Status: ${item.status || 'N/A'}\n` +
+                                        `📅 Created: ${item.created_date ? new Date(item.created_date).toLocaleString() : 'N/A'}\n` +
+                                        `🏷️ Category: ${item.category || 'N/A'}\n` +
+                                        `🏷️ Sub-Category: ${item.sub_category || 'N/A'}`;
+                        } else {
+                            // Format complaint details
+                            const priorityIcon = item.priority === 'high' ? '🔴' : '🟡';
+                            detailsText = `${priorityIcon} COMPLAINT #${index + 1}\n` +
+                                        `📋 Number: ${item.complaint_number || 'N/A'}\n` +
+                                        `👤 Customer: ${item.customer_name || 'N/A'}\n` +
+                                        `🆔 Opus ID: ${item.opus_id || 'N/A'}\n` +
+                                        `📝 Type: ${item.type || 'N/A'}\n` +
+                                        `📄 Subject: ${item.subject || 'N/A'}\n` +
+                                        `📋 Description: ${item.issue_description || 'N/A'}\n` +
+                                        `⚡ Priority: ${item.priority || 'N/A'}\n` +
+                                        `📊 Status: ${item.status || 'N/A'}\n` +
+                                        `📅 Created: ${item.created_date ? new Date(item.created_date).toLocaleString() : 'N/A'}\n` +
+                                        `⏱️ Timeline: ${item.timeline_days || 'N/A'} days\n` +
+                                        `🎯 Expected Resolution: ${item.expected_resolution ? new Date(item.expected_resolution).toLocaleString() : 'N/A'}\n` +
+                                        `🏷️ Category: ${item.category || 'N/A'}\n` +
+                                        `🏷️ Sub-Category: ${item.sub_category || 'N/A'}\n` +
+                                        `🔺 Escalation Level: ${item.escalation_level || 'N/A'}`;
+                        }
+                        
+                        addMessage(detailsText, 'bot');
+                    });
+                }
+                
+                showStatus('Complaints loaded successfully!', 'success');
+                setTimeout(hideStatus, 3000);
+                
+            } catch (error) {
+                console.error('Error fetching complaints:', error);
+                addMessage('❌ Failed to load complaints. Please try again.', 'bot');
+                showStatus('Failed to load complaints. Please try again.', 'error');
+                setTimeout(hideStatus, 5000);
+            }
+        }
+    </script>
+</body>
 </html>

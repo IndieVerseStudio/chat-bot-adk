@@ -170,5 +170,19 @@
     "category": "Painter/contractor Complaints",
     "sub_category": "Opus ID App",
     "escalation_level": "high"
+  },
+  {
+    "enquiry_number": "ENQ202508250012",
+    "opus_id": "100092",
+    "customer_name": "Meghna Rao",
+    "type": "enquiry",
+    "enquiry_type": "KYC Assistance",
+    "subject": "Guidance for KYC Completion",
+    "description": "Customer's KYC is incomplete. Needs assistance to complete the process for account activation. Current status is Partial KYC.",
+    "status": "logged",
+    "created_date": "2025-08-25T18:32:44.006158",
+    "category": "General enquiries/Others",
+    "sub_category": "Other Enquiries",
+    "issue": "Become a Painter/Contractor"
   }
 ]
